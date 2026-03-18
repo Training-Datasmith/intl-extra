@@ -145,35 +145,31 @@ final class IntlExtension extends AbstractExtension
         'monetary_grouping_separator' => \NumberFormatter::MONETARY_GROUPING_SEPARATOR_SYMBOL,
     ];
 
-    private $dateFormatters = [];
-    private $numberFormatters = [];
-    private $dateFormatterPrototype;
-    private $numberFormatterPrototype;
+    private array $dateFormatters = [];
+    private array $numberFormatters = [];
 
-    public function __construct(?\IntlDateFormatter $dateFormatterPrototype = null, ?\NumberFormatter $numberFormatterPrototype = null)
+    public function __construct(private readonly ?\IntlDateFormatter $dateFormatterPrototype = null, private readonly ?\NumberFormatter $numberFormatterPrototype = null)
     {
-        $this->dateFormatterPrototype = $dateFormatterPrototype;
-        $this->numberFormatterPrototype = $numberFormatterPrototype;
     }
 
     public function getFilters(): array
     {
         return [
             // internationalized names
-            new TwigFilter('country_name', [$this, 'getCountryName']),
-            new TwigFilter('currency_name', [$this, 'getCurrencyName']),
-            new TwigFilter('currency_symbol', [$this, 'getCurrencySymbol']),
-            new TwigFilter('language_name', [$this, 'getLanguageName']),
-            new TwigFilter('locale_name', [$this, 'getLocaleName']),
-            new TwigFilter('timezone_name', [$this, 'getTimezoneName']),
+            new TwigFilter('country_name', $this->getCountryName(...)),
+            new TwigFilter('currency_name', $this->getCurrencyName(...)),
+            new TwigFilter('currency_symbol', $this->getCurrencySymbol(...)),
+            new TwigFilter('language_name', $this->getLanguageName(...)),
+            new TwigFilter('locale_name', $this->getLocaleName(...)),
+            new TwigFilter('timezone_name', $this->getTimezoneName(...)),
 
             // localized formatters
-            new TwigFilter('format_currency', [$this, 'formatCurrency']),
-            new TwigFilter('format_number', [$this, 'formatNumber']),
-            new TwigFilter('format_*_number', [$this, 'formatNumberStyle']),
-            new TwigFilter('format_datetime', [$this, 'formatDateTime'], ['needs_environment' => true]),
-            new TwigFilter('format_date', [$this, 'formatDate'], ['needs_environment' => true]),
-            new TwigFilter('format_time', [$this, 'formatTime'], ['needs_environment' => true]),
+            new TwigFilter('format_currency', $this->formatCurrency(...)),
+            new TwigFilter('format_number', $this->formatNumber(...)),
+            new TwigFilter('format_*_number', $this->formatNumberStyle(...)),
+            new TwigFilter('format_datetime', $this->formatDateTime(...), ['needs_environment' => true]),
+            new TwigFilter('format_date', $this->formatDate(...), ['needs_environment' => true]),
+            new TwigFilter('format_time', $this->formatTime(...), ['needs_environment' => true]),
         ];
     }
 
@@ -181,13 +177,13 @@ final class IntlExtension extends AbstractExtension
     {
         return [
             // internationalized names
-            new TwigFunction('country_timezones', [$this, 'getCountryTimezones']),
-            new TwigFunction('language_names', [$this, 'getLanguageNames']),
-            new TwigFunction('script_names', [$this, 'getScriptNames']),
-            new TwigFunction('country_names', [$this, 'getCountryNames']),
-            new TwigFunction('locale_names', [$this, 'getLocaleNames']),
-            new TwigFunction('currency_names', [$this, 'getCurrencyNames']),
-            new TwigFunction('timezone_names', [$this, 'getTimezoneNames']),
+            new TwigFunction('country_timezones', $this->getCountryTimezones(...)),
+            new TwigFunction('language_names', $this->getLanguageNames(...)),
+            new TwigFunction('script_names', $this->getScriptNames(...)),
+            new TwigFunction('country_names', $this->getCountryNames(...)),
+            new TwigFunction('locale_names', $this->getLocaleNames(...)),
+            new TwigFunction('currency_names', $this->getCurrencyNames(...)),
+            new TwigFunction('timezone_names', $this->getTimezoneNames(...)),
         ];
     }
 
@@ -199,7 +195,7 @@ final class IntlExtension extends AbstractExtension
 
         try {
             return Countries::getName($country, $locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return $country;
         }
     }
@@ -212,7 +208,7 @@ final class IntlExtension extends AbstractExtension
 
         try {
             return Currencies::getName($currency, $locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return $currency;
         }
     }
@@ -225,7 +221,7 @@ final class IntlExtension extends AbstractExtension
 
         try {
             return Currencies::getSymbol($currency, $locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return $currency;
         }
     }
@@ -238,7 +234,7 @@ final class IntlExtension extends AbstractExtension
 
         try {
             return Languages::getName($language, $locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return $language;
         }
     }
@@ -251,7 +247,7 @@ final class IntlExtension extends AbstractExtension
 
         try {
             return Locales::getName($data, $locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return $data;
         }
     }
@@ -264,7 +260,7 @@ final class IntlExtension extends AbstractExtension
 
         try {
             return Timezones::getName($timezone, $locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return $timezone;
         }
     }
@@ -273,7 +269,7 @@ final class IntlExtension extends AbstractExtension
     {
         try {
             return Timezones::forCountryCode($country);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return [];
         }
     }
@@ -282,7 +278,7 @@ final class IntlExtension extends AbstractExtension
     {
         try {
             return Languages::getNames($locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return [];
         }
     }
@@ -291,7 +287,7 @@ final class IntlExtension extends AbstractExtension
     {
         try {
             return Scripts::getNames($locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return [];
         }
     }
@@ -300,7 +296,7 @@ final class IntlExtension extends AbstractExtension
     {
         try {
             return Countries::getNames($locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return [];
         }
     }
@@ -309,7 +305,7 @@ final class IntlExtension extends AbstractExtension
     {
         try {
             return Locales::getNames($locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return [];
         }
     }
@@ -318,7 +314,7 @@ final class IntlExtension extends AbstractExtension
     {
         try {
             return Currencies::getNames($locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return [];
         }
     }
@@ -327,7 +323,7 @@ final class IntlExtension extends AbstractExtension
     {
         try {
             return Timezones::getNames($locale);
-        } catch (MissingResourceException $exception) {
+        } catch (MissingResourceException) {
             return [];
         }
     }
